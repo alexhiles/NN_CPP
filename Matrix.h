@@ -59,3 +59,172 @@ private:
     double x;
     //private variable double x
 }; //closes class
+
+inline Matrix operator +(const Matrix &right, const Matrix &left)
+{
+    Matrix temp(left);
+    if ( right.Rows() != left.Rows() || right.Cols() != left.Cols() )
+    {
+        std::cout << "Error while adding matrices, the two must have the same dimensions." << '\n';
+    }
+    else
+    {
+        for ( int r=0; r < temp.Rows(); r++ )
+        {
+            for ( int c=0; c < temp.Cols(); c++ )
+            {
+                temp(r,c) = left(r,c) + right(r,c);
+            }
+        }
+    }
+    return temp;
+}
+//overloads + operator that adds Matrix with an Matrix
+inline Matrix operator -(const Matrix &left, const Matrix &right)
+{
+    Matrix temp(left);
+    if ( right.Rows() != left.Rows() || right.Cols() != left.Cols() )
+    {
+        std::cout << "\nError while adding matrices, the two must have the same dimensions.\n";
+    }
+    else
+    {
+        for ( int r=0; r < temp.Rows(); r++ )
+        {
+            for ( int c=0; c < temp.Cols(); c++ )
+            {
+                temp(r,c) = left(r,c) - right(r,c);
+            }
+        }
+    }
+    return temp;
+}
+//overloads operator - for Matrix subtract an Matrix
+inline Matrix operator *(const Matrix &left, const double &right)
+{
+  Matrix temp(left);
+    {
+        for ( int r=0; r < temp.Rows(); r++ )
+        {
+            for ( int c=0; c < temp.Cols(); c++ )
+            {
+                temp(r,c) = right*left(r,c);
+            }
+        }
+    }
+    return temp;
+}
+//overloads * operator for an Matrix on the left and a double
+//variable on the right
+
+inline Matrix operator -(Matrix left)
+{
+  for (int i = 0; i < left.Rows(); i++)
+  {
+    for (int j = 0; j < left.Cols(); j++)
+    {
+      left(i, j) = - left(i, j);
+    };
+  };
+  return left;
+};
+
+inline Matrix operator ^(const Matrix left, const Matrix right)
+{
+  if (left.Rows() != right.Rows())
+  {
+    std::cout << "Dimensions must agree!" << '\n';
+    exit(0);
+  }
+
+  Matrix temp(left.Rows(), left.Cols());
+
+  for (int i = 0; i < left.Rows(); i++)
+  {
+    for (int j = 0; j < left.Cols(); j++)
+    {
+      temp(i, j) = left(i, j) * right(i, j);
+    };
+  };
+  return temp;
+};
+
+inline Matrix operator *(const double &left, const Matrix &right)
+{
+    Matrix temp(right);
+    {
+        for ( int r=0; r < temp.Rows(); r++ )
+        {
+            for ( int c=0; c < temp.Cols(); c++ )
+            {
+                temp(r,c) = left*right(r,c);
+            }
+        }
+    }
+    return temp;
+}
+//overloads operator * where a double variable is on the left
+//and a Matrix is on the right
+inline Matrix operator /(const Matrix &left, const double &right)
+{
+    Matrix temp(left);
+    {
+        for ( int r=0; r < temp.Rows(); r++ )
+        {
+            for ( int c=0; c < temp.Cols(); c++ )
+            {
+                temp(r,c) = left(r,c)/right;
+            }
+        }
+    }
+    return temp;
+}
+//overloads / operator where a Matrix is on the left and a double
+//variable is on the right
+inline Matrix operator *(const Matrix &left, const Matrix &right)
+{
+    if (left.Cols()!=right.Rows())
+    {
+        std::cout << " MATRIX-MATRIX MULTIPLICATION ERROR: Inner dimensions must agree!" << '\n';
+        abort();
+    }
+    Matrix X(left.Rows(),right.Cols(),0);
+    for (int i=0; i < left.Rows();i++)
+    {
+    for (int j=0;j < right.Cols();j++)
+     {
+         for (int k=0; k < left.Cols();k++)
+         {
+         X(i,j)+=left(i,k)*right(k,j);
+     }
+}
+}
+return X;
+}
+
+inline Matrix operator -(double x, Matrix left)
+{
+  for (int i = 0; i < left.Rows(); i++)
+  {
+    for (int j = 0; j < left.Cols(); j++)
+    {
+      left(i, j) = x - left(i, j);
+    };
+  };
+  return left;
+};
+
+inline Matrix operator!(Matrix A)
+{
+  Matrix B(A.Cols(), A.Rows());
+
+  for (int i = 0; i < A.Cols();i++)
+  {
+    for (int j = 0; j < A.Rows();j++)
+    {
+      B(i, j) = A(j, i);
+    }
+  };
+  return B;
+
+};
