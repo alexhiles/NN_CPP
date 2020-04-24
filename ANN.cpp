@@ -101,6 +101,7 @@ class Layer
 {
 public:
 
+    Layer() : W(0, 0), b(0, 0) {}
     Layer(int m, int n) : W(m, n), b(m, 1)  {}
 
     void setNormal()
@@ -118,6 +119,26 @@ public:
         b(i, 1) = static_cast<double>(distribution(generator));
       }
     };
+
+    Matrix getW()
+    {
+      return W;
+    }
+
+    Matrix getb()
+    {
+      return b;
+    }
+
+    void setW(Matrix A)
+    {
+      W = A;
+    }
+
+    void setb(Matrix A)
+    {
+      b = A;
+    }
 
 private:
   Matrix W;
@@ -172,33 +193,25 @@ Matrix prediction(Matrix W2, Matrix W3, Matrix W4, Matrix b2, Matrix b3, Matrix 
   return A4;
 };
 
-double cost_function(Matrix W2, Matrix W3, Matrix W4, Matrix b2, Matrix b3, Matrix b4, Matrix x1, Matrix x2, Matrix y)
+double cost_function(Matrix W2, Matrix W3, Matrix W4, Matrix b2, Matrix b3, Matrix b4, Matrix data, Matrix y)
 {
   Matrix cost(10, 1);
   Matrix x(2, 1);
 
   for (int i = 0; i < cost.Rows();i++)
   {
-    x(0, 0)    = x1(i, 0);
-    x(1, 0)    = x2(i, 0);
+    x(0, 0)    = data(i, 0);
+    x(1, 0)    = data(i, 1);
 
     Matrix A2  = activation(W2, b2, x);
     Matrix A3  = activation(W3, b3, A2);
     Matrix A4  = activation(W4, b4, A3);
 
-    Matrix YData(y.Rows(), 1);
-    YData(0, 0) = y(0, i);
-    YData(1, 0) = y(1, i);
-
-//    std::cout << "A4 dimensions : (" << A4.Rows() << "," << A4.Cols() << ")" << '\n';
-//    std::cout << "Y  Data : ("       << YData.Rows() << "," << YData.Cols() << ")" << '\n';
-    Matrix A = A4 - YData;
+    Matrix YData(y.Cols(), 1);
+    YData(0, 0) = y(i, 0);
+    YData(1, 0) = y(i, 1);
 
     cost(i, 0) = Euclidean(A4 - YData);
-  //  std::cout << cost(i, 0) << '\n';
-
-//    std::cout << cost(i, 0) << '\n';
-
 
   };
 
@@ -210,43 +223,35 @@ int main()
   clock_t time_req;
   time_req = clock();
 
-
   TrainingData DataPoints;
   TrainingData Class;
 
   Matrix X      = DataPoints.genPoints();
-  Matrix Y      = Class.genClass();
+  Matrix Y      =      Class.genClass();
 
+  // General network parameters
 
-  // Data
-  Matrix D1(10, 1);
-
-  D1(0,0) = 0.1;
-  D1(1,0) = 0.3;
-  D1(2,0) = 0.1;
-  D1(3,0) = 0.6;
-  D1(4,0) = 0.4;
-  D1(5,0) = 0.6;
-  D1(6,0) = 0.5;
-  D1(7,0) = 0.9;
-  D1(8,0) = 0.4;
-  D1(9,0) = 0.7;
-
-  Matrix D2(10, 1);
-
-  D2(0,0) = 0.1;
-  D2(1,0) = 0.4;
-  D2(2,0) = 0.5;
-  D2(3,0) = 0.9;
-  D2(4,0) = 0.2;
-  D2(5,0) = 0.3;
-  D2(6,0) = 0.6;
-  D2(7,0) = 0.2;
-  D2(8,0) = 0.4;
-  D2(9,0) = 0.6;
+  int number_of_layers = 3;
+  std::vector<int> neurons_per_layer = {2, 3, 2};
 
   // Classifiers
-  std::vector<TrainingData> Data;
+  std::vector<Layer>        Data(number_of_layers);
+  std::vector<Matrix> Activation(number_of_layers);
+  std::vector<Matrix>     Errors(number_of_layers);
+
+  for (int i = 0; i < neurons_per_layer.size(); i++)
+  {
+    if (i == 0)
+    {
+      Data[i] = Layer(neurons_per_layer[i], neurons_per_layer[i]);
+    }
+    else
+    {
+    Data[i] = Layer(neurons_per_layer[i], neurons_per_layer[i - 1]);
+    }
+    Data[i].setNormal();
+  };
+
 
   // Weight matrices
   Matrix W2(2, 2, 1);
@@ -267,7 +272,7 @@ int main()
   b4 = b4.setNormal(b4);
 
   // learning rate
-  double learningrate{0.75};
+  double learningrate{0.1};
 
   // number of iterations to do gradient descent
   int training_steps{100000};
@@ -282,17 +287,57 @@ int main()
   {
     int k = rand() % 10;
 
-    XVec(0,0)  = D1(k, 0);
-    XVec(1,0)  = D2(k, 0);
+    XVec(0,0)  = X(k, 0);
+    XVec(1,0)  = X(k, 1);
 
-    YVec(0, 0) = Y(0, k);
-    YVec(1, 0) = Y(1, k);
+    YVec(0, 0) = Y(k, 0);
+    YVec(1, 0) = Y(k, 1);
 
     // forward pass
-    Matrix A2 = activation(W2, b2, XVec);
-    Matrix A3 = activation(W3, b3, A2);
-    Matrix A4 = activation(W4, b4, A3);
-    Matrix Ones(A4.Rows(), A4.Cols(), 1);
+
+  //  for (int i = 0; i < number_of_layers; i++)
+  //  {
+  //    Matrix A = activation(Data[i].getW(), Data[i].getb(), XVec);
+  //    break;
+  //    XVec = A;
+  //  };
+    Activation[0] = activation(Data[0].getW(), Data[0].getb(), XVec);
+    for (int i = 1; i < Activation.size(); i++)
+    {
+      Activation[i] = activation(Data[i].getW(), Data[i].getb(), Activation[i - 1]);
+    }
+    Matrix Ones(Activation[Activation.size() - 1].Rows(), Activation[Activation.size() - 1].Cols(), 1);
+
+    Errors[0] = Activation[Activation.size() - 1] ^ (Ones - Activation[Activation.size() - 1] ) ^ (Activation[Activation.size() - 1] - YVec);
+
+    // UP TO HERE ***ERRORS ARE HERE 
+    for (int i = 1; i < Activation.size(); i++)
+    {
+      Matrix Ones(Activation[Activation.size() - 1 - i].Rows(), Activation[Activation.size() - 1 - i].Cols(), 1);
+
+      Errors[i] = Activation[Activation.size() - 1 - i] ^ (Ones - Activation[Activation.size() - 1 - i]) ^ (!Data[Data.size() - 1].getW() * Errors[i-1]);
+    }
+
+
+    Matrix A2 = activation(Data[0].getW(), Data[0].getb(), XVec);
+
+std::cout << "A3 W: " << Data[1].getW().Rows() << " " << Data[1].getW().Cols() << '\n';
+std::cout << "A3 b: " << Data[1].getb().Rows() << " " << Data[1].getb().Cols() << '\n';
+    Matrix A3 = activation(Data[1].getW(), Data[1].getb(), A2);
+
+    std::cout << "A3 W: " << Data[1].getW().Rows() << " " << Data[1].getW().Cols() << '\n';
+    std::cout << "A3 b: " << Data[1].getb().Rows() << " " << Data[1].getb().Cols() << '\n';
+    Matrix A4 = activation(Data[2].getW(), Data[2].getb(), A3);
+  //  std::cout << "A4 W: " << Data[2].getW().Rows() << " " << Data[2].getW().Cols() << '\n';
+  //  std::cout << "A4 b: " << Data[2].getb().Rows() << " " << Data[2].getb().Cols() << '\n';
+
+
+
+
+//    Matrix A2 = activation(W2, b2, XVec);
+//    Matrix A3 = activation(W3, b3, A2);
+//    Matrix A4 = activation(W4, b4, A3);
+//    Matrix Ones(A4.Rows(), A4.Cols(), 1);
 
 
     // backward pass
@@ -302,17 +347,25 @@ int main()
     Matrix Ones2(A2.Rows(), A2.Cols(), 1);
     Matrix delta2 = (A2 ^ (Ones2 - A2)) ^ (!W3 * delta3);
 
-    W2 = W2 - learningrate * delta2 * !XVec;
-    W3 = W3 - learningrate * delta3 * !A2;
-    W4 = W4 - learningrate * delta4 * !A3;
+    // update
+    Data[0].setW(Data[0].getW() - learningrate * delta2 * !XVec);
+    Data[1].setW(Data[1].getW() - learningrate * delta3 * !A2);
+    Data[2].setW(Data[2].getW() - learningrate * delta4 * !A3);
 
-    b2 = b2 - learningrate * delta2;
-    b3 = b3 - learningrate * delta3;
-    b4 = b4 - learningrate * delta4;
+    Data[0].setb(Data[0].getb() - learningrate * delta2);
+    Data[1].setb(Data[1].getb() - learningrate * delta3);
+    Data[2].setb(Data[2].getb() - learningrate * delta4);
+
+//    W2 = W2 - learningrate * delta2 * !XVec;
+//    W3 = W3 - learningrate * delta3 * !A2;
+//    W4 = W4 - learningrate * delta4 * !A3;
+
+//    b2 = b2 - learningrate * delta2;
+//    b3 = b3 - learningrate * delta3;
+//    b4 = b4 - learningrate * delta4;
 
 
-    Cost(i, 0) = cost_function(W2, W3, W4, b2, b3, b4, D1, D2, Y);
-//    std::cout << Cost(i, 0) << '\n';
+//    Cost(i, 0) = cost_function(Data, X, Y);
 
   };
   time_req = clock() - time_req;
