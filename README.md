@@ -7,7 +7,7 @@ Currently implemented:
 Compiling from MAC OS X:
 
 ```C++
- g++ -std=c++xx main.cpp -o main
+ g++ -std=c++xx naiveANN.cpp -o main
  ./main
 ```
 
