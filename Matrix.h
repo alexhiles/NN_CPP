@@ -1,3 +1,7 @@
+#ifndef MATRIX_HEADER
+#endif
+#define MATRIX_HEADER
+
 #include <iostream>
 #include <random>
 #include <vector>
@@ -60,6 +64,31 @@ private:
     //private variable double x
 }; //closes class
 
+inline Matrix operator +(const Matrix &right, const Matrix &left);
+//overloads + operator that adds Matrix with an Matrix
+inline Matrix operator -(const Matrix &left, const Matrix &right);
+//overloads operator - for Matrix subtract an Matrix
+inline Matrix operator *(const Matrix &left, const double &right);
+//overloads * operator for an Matrix on the left and a double
+//variable on the right
+
+inline Matrix operator -(Matrix left);
+
+inline Matrix operator ^(const Matrix left, const Matrix right);
+
+inline Matrix operator *(const double &left, const Matrix &right);
+//overloads operator * where a double variable is on the left
+//and a Matrix is on the right
+inline Matrix operator /(const Matrix &left, const double &right);
+//overloads / operator where a Matrix is on the left and a double
+//variable is on the right
+inline Matrix operator *(const Matrix &left, const Matrix &right);
+
+inline Matrix operator -(double x, Matrix left);
+
+inline Matrix operator!(Matrix A);
+
+
 inline Matrix operator +(const Matrix &right, const Matrix &left)
 {
     Matrix temp(left);
@@ -102,18 +131,18 @@ inline Matrix operator -(const Matrix &left, const Matrix &right)
 //overloads operator - for Matrix subtract an Matrix
 inline Matrix operator *(const Matrix &left, const double &right)
 {
-  Matrix temp(left);
+    Matrix temp(left);
     {
         for ( int r=0; r < temp.Rows(); r++ )
         {
             for ( int c=0; c < temp.Cols(); c++ )
             {
                 temp(r,c) = right*left(r,c);
-            }
-        }
-    }
+            };
+        };
+    };
     return temp;
-}
+};
 //overloads * operator for an Matrix on the left and a double
 //variable on the right
 
@@ -228,3 +257,4 @@ inline Matrix operator!(Matrix A)
   return B;
 
 };
+
