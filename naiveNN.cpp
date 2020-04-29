@@ -72,14 +72,9 @@ double cost_function(Matrix W2, Matrix W3, Matrix W4, Matrix b2, Matrix b3, Matr
     YData(0, 0) = y(0, i);
     YData(1, 0) = y(1, i);
 
-//    std::cout << "A4 dimensions : (" << A4.Rows() << "," << A4.Cols() << ")" << '\n';
-//    std::cout << "Y  Data : ("       << YData.Rows() << "," << YData.Cols() << ")" << '\n';
     Matrix A = A4 - YData;
 
     cost(i, 0) = Euclidean(A4 - YData);
-  //  std::cout << cost(i, 0) << '\n';
-
-//    std::cout << cost(i, 0) << '\n';
 
 
   };
@@ -157,7 +152,7 @@ int main()
   b4 = b4.setNormal(b4);
 
   // learning rate
-  double learningrate{0.75};
+  double learningrate{0.1};
 
   // number of iterations to do gradient descent
   int training_steps{100000};
@@ -202,7 +197,7 @@ int main()
 
 
     Cost(i, 0) = NN::cost_function(W2, W3, W4, b2, b3, b4, D1, D2, Y);
-
+    std::cout << Cost(i,0) << '\n';
   };
   time_req = clock() - time_req;
 
